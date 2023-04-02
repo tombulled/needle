@@ -9,6 +9,8 @@ from typing import (
     Tuple,
 )
 
+__all__: Sequence[str] = ("prepare_arguments",)
+
 
 def prepare_arguments(
     func: Callable, arguments: Mapping[str, Any]
