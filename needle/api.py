@@ -1,6 +1,15 @@
 from dataclasses import dataclass
 import inspect
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Protocol, Sequence, TypeVar
+from typing import (
+    Any,
+    Iterable,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Protocol,
+    Sequence,
+    TypeVar,
+)
 
 from .typing import DependencyProvider
 
@@ -23,43 +32,34 @@ class Dependent(Protocol[T]):
 
     @staticmethod
     def on(type_: Any, /) -> "Dependent[T]":
-        return StaticIdentityDependent(type_)
+        return IdentityDependent(type_)
 
     @staticmethod
     def of(type_: Any, value: T, /) -> "Dependent[T]":
-        return StaticSupplierDependent(type_=type_, value=value)
+        return SupplierDependent(type=type_, value=value)
 
 
-class BuildableDependent(Dependent[T]):
+class BuildableDependent(Dependent[T], Protocol[T]):
     def build(self, dependencies: Mapping["Dependent", Any], /) -> T:
         ...
 
 
+@dataclass(unsafe_hash=True)
 class UnsatisfiableDependent(Dependent[T]):
     type: Any = Any
-
-    def __init__(self, type_: Any, /) -> None:
-        self.type = type_
-
-    def __repr__(self) -> str:
-        return f"{type(self).__name__}(type={self.type!r})"
 
     @staticmethod
     def get_dependencies() -> Sequence[Dependent]:
         return []
 
 
-class StaticIdentityDependent(BuildableDependent[T]):
+@dataclass(unsafe_hash=True)
+class IdentityDependent(BuildableDependent[T]):
     type: Any
-
-    sub_dependent: Dependent[T]
-
-    def __init__(self, type_: Any, /) -> None:
-        self.type = type_
-        self.sub_dependent = UnsatisfiableDependent(type_)
-
-    def __repr__(self) -> str:
-        return f"{type(self).__name__}(type={self.type!r}, sub_dependent={self.sub_dependent!r})"
+    
+    @property
+    def sub_dependent(self) -> Dependent[T]:
+        return UnsatisfiableDependent(self.type)
 
     def get_dependencies(self) -> Sequence[Dependent]:
         return [self.sub_dependent]
@@ -70,16 +70,10 @@ class StaticIdentityDependent(BuildableDependent[T]):
         return dependencies[self.sub_dependent]
 
 
-class StaticSupplierDependent(BuildableDependent[T]):
+@dataclass(unsafe_hash=True)
+class SupplierDependent(BuildableDependent[T]):
     type: Any
     value: T
-
-    def __init__(self, *, type_: Any, value: T) -> None:
-        self.type = type_
-        self.value = value
-
-    def __repr__(self) -> str:
-        return f"{type(self).__name__}(type={self.type!r}, value={self.value!r})"
 
     @staticmethod
     def get_dependencies() -> Sequence[Dependent]:
@@ -105,6 +99,7 @@ class SolvedDependent(Protocol[T]):
         self, *, values: Optional[Mapping[DependencyProvider[Any], Any]] = None
     ) -> T:
         ...
+
 
 @dataclass
 class StaticSolvedDependent(SolvedDependent[T]):
@@ -150,9 +145,7 @@ class StaticSolvedDependent(SolvedDependent[T]):
 
         dependency_parameter: Dependent[Any]
         for dependency_parameter in self.dag[self.dependency]:
-            args[dependency_parameter] = resolved[
-                dependency_parameter.type
-            ]
+            args[dependency_parameter] = resolved[dependency_parameter.type]
 
         return self.dependency.build(args)
 

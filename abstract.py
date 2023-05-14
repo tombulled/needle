@@ -2,8 +2,18 @@ from dataclasses import dataclass
 
 from needle.api import Dependent, Container
 
+"""
+Current problem:
 
-@dataclass
+@bean
+def dogs() -> List[Dog]:
+    ...
+
+^ How do I get that to inject successfully for a type of List[Animal]?
+"""
+
+
+@dataclass(unsafe_hash=True)
 class Animal:
     name: str
 
