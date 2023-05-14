@@ -1,21 +1,21 @@
 import inspect
 from typing import Any
 from needle.api import DependencyParameter
-from needle.dependent import DependentImpl
+from needle.dependent import CallableDependent
 
 
 def test_get_dependencies_1d_func() -> None:
     def foo():
         pass
 
-    assert tuple(DependentImpl(foo).get_dependencies()) == ()
+    assert tuple(CallableDependent(foo).get_dependencies()) == ()
 
 
 def test_get_dependencies_1d_class() -> None:
     class Foo:
         pass
 
-    assert tuple(DependentImpl(Foo).get_dependencies()) == ()
+    assert tuple(CallableDependent(Foo).get_dependencies()) == ()
 
 
 def test_get_dependencies_2d_func() -> None:
@@ -24,9 +24,9 @@ def test_get_dependencies_2d_func() -> None:
 
     inspect.Parameter
 
-    assert tuple(DependentImpl(foo).get_dependencies()) == (
+    assert tuple(CallableDependent(foo).get_dependencies()) == (
         DependencyParameter(
-            dependency=DependentImpl(str),
+            dependency=CallableDependent(str),
             parameter=inspect.Parameter(
                 name="bar",
                 kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
@@ -41,9 +41,9 @@ def test_get_dependencies_2d_class() -> None:
         def __init__(self, bar: str) -> None:
             pass
 
-    assert tuple(DependentImpl(Foo).get_dependencies()) == (
+    assert tuple(CallableDependent(Foo).get_dependencies()) == (
         DependencyParameter(
-            dependency=DependentImpl(str),
+            dependency=CallableDependent(str),
             parameter=inspect.Parameter(
                 name="bar",
                 kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
@@ -60,9 +60,9 @@ def test_get_dependencies_2d_obj() -> None:
 
     foo: Foo = Foo()
 
-    assert tuple(DependentImpl(foo).get_dependencies()) == (
+    assert tuple(CallableDependent(foo).get_dependencies()) == (
         DependencyParameter(
-            dependency=DependentImpl(str),
+            dependency=CallableDependent(str),
             parameter=inspect.Parameter(
                 name="bar",
                 kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
