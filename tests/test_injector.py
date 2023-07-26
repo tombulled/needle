@@ -1,5 +1,5 @@
-from needle.api import Dependent, Injector, SolvedDependent
-from needle.dependent import DependentImpl
+from needle.api import Dependent, Container, SolvedDependent
+from needle.dependent import CallableDependent
 from needle.injector import InjectorImpl
 
 
@@ -7,9 +7,9 @@ def test_solve_1d_func() -> None:
     def foo() -> str:
         return "foo"
 
-    dependency: Dependent[str] = DependentImpl(foo)
+    dependency: Dependent[str] = CallableDependent(foo)
 
-    injector: Injector = InjectorImpl()
+    injector: Container = InjectorImpl()
 
     solved: SolvedDependent[str] = injector.solve(dependency)
 

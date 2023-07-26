@@ -9,7 +9,7 @@ from typing import (
 )
 
 
-from .api import Dependent, DependencyParameter, Injector, SolvedDependent
+from .api import Dependent, DependencyParameter, Container, SolvedDependent
 from .solved import SolvedDependentImpl
 
 __all__: Sequence[str] = ("InjectorImpl",)
@@ -19,7 +19,7 @@ T = TypeVar("T")
 
 
 @dataclass
-class InjectorImpl(Injector):
+class InjectorImpl(Container):
     _dependencies: MutableSequence[Dependent[Any]] = field(default_factory=list)
 
     def register(self, dependency: Dependent[T]) -> None:
@@ -38,3 +38,6 @@ class InjectorImpl(Injector):
             dependency=dependency,
             dag=dag,
         )
+
+def solve(dependent: Dependent[T]) -> SolvedDependent[T]:
+    ...

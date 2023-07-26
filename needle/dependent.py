@@ -5,14 +5,14 @@ from typing import Any, MutableSequence, Sequence, TypeVar
 from .api import Dependent, DependencyParameter
 from .typing import DependencyProvider
 
-__all__: Sequence[str] = ("DependentImpl",)
+__all__: Sequence[str] = ("CallableDependent",)
 
 
 T = TypeVar("T")
 
 
 @dataclass(frozen=True)
-class DependentImpl(Dependent[T]):
+class CallableDependent(Dependent[T]):
     call: DependencyProvider[T]
 
     def get_dependencies(self) -> Sequence[DependencyParameter]:
@@ -30,7 +30,7 @@ class DependentImpl(Dependent[T]):
             if not callable(annotation):
                 raise Exception("Parameter annotation is not callable")
 
-            dependency: Dependent = DependentImpl(annotation)
+            dependency: Dependent = CallableDependent(annotation)
             dependency_parameter: DependencyParameter = DependencyParameter(
                 dependency=dependency,
                 parameter=parameter,
